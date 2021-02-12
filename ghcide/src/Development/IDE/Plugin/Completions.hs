@@ -38,9 +38,6 @@ import Ide.PluginUtils (getClientConfig)
 import Ide.Types
 import TcRnDriver (tcRnImportDecls)
 import Control.Concurrent.Async (concurrently)
-#if defined(GHC_LIB)
-import Development.IDE.Import.DependencyInformation
-#endif
 
 descriptor :: PluginId -> PluginDescriptor IdeState
 descriptor plId = (defaultPluginDescriptor plId)
@@ -66,15 +63,6 @@ produceCompletions = do
         ms <- fmap fst <$> useWithStale GetModSummaryWithoutTimestamps file
         sess <- fmap fst <$> useWithStale GhcSessionDeps file
 
--- When possible, rely on the haddocks embedded in our interface files
--- This creates problems on ghc-lib, see comment on 'getDocumentationTryGhc'
-#if !defined(GHC_LIB)
-        let parsedDeps = []
-#else
-        deps <- maybe (TransitiveDependencies [] [] []) fst <$> useWithStale GetDependencies file
-        parsedDeps <- mapMaybe (fmap fst) <$> usesWithStale GetParsedModule (transitiveModuleDeps deps)
-#endif
-
         case (ms, sess) of
             (Just (ms,imps), Just sess) -> do
               let env = hscEnv sess
@@ -83,7 +71,7 @@ produceCompletions = do
               case (global, inScope) of
                   ((_, Just globalEnv), (_, Just inScopeEnv)) -> do
                       let uri = fromNormalizedUri $ normalizedFilePathToUri file
-                      cdata <- liftIO $ cacheDataProducer uri sess (ms_mod ms) globalEnv inScopeEnv imps parsedDeps
+                      cdata <- liftIO $ cacheDataProducer uri sess (ms_mod ms) globalEnv inScopeEnv imps
                       return ([], Just cdata)
                   (_diag, _) ->
                       return ([], Nothing)
