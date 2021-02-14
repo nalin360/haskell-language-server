@@ -1,5 +1,10 @@
 ### 0.7.5 (2021-02-??)
 * Added Development.IDE.Main (#1338) - Pepe Iborra
+* Fix completion snippets on DuplicateRecordFields (#1360) - Potato Hatsue
+* Add code action for hiding shadowed identifiers from imports (#1322) - Potato Hatsue
+* Make find-definition work better with multi-components (#1357) - wz1000
+* Index files on first open (#1358) - wz1000
+* Fix code actions regression (#1349) - Pepe Iborra
 
 ### 0.7.4 (2021-02-08)
 * Support for references via hiedb (#704) - wz1000
